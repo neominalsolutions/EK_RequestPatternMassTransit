@@ -1,8 +1,7 @@
 ﻿using LoanApplication.API.Dtos;
 using MassTransit;
-using MassTransit.Clients;
+using MediatR;
 using Messaging.CustomerCredit;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LoanApplication.API.Controllers
@@ -12,9 +11,11 @@ namespace LoanApplication.API.Controllers
   public class LoanRequestsController : ControllerBase
   {
     private readonly IRequestClient<GetCreditScoreRequest> client;
-    public LoanRequestsController(IRequestClient<GetCreditScoreRequest> client)
+    private readonly IMediator mediator; // Kule tüm request sürecini yönetecek.
+    public LoanRequestsController(IRequestClient<GetCreditScoreRequest> client, IMediator mediator)
     {
       this.client = client;
+      this.mediator = mediator;
     }
     [HttpPost]
     public async Task<IActionResult> GetLoanRequest([FromBody] LoanRequestDto request)
@@ -35,6 +36,23 @@ namespace LoanApplication.API.Controllers
       }
 
       return Ok(response.Message);
+    }
+
+
+    [HttpPost("v2")]
+    public async Task<IActionResult> GetLoanRequestWithMediatR([FromBody] LoanRequestDto request)
+    {
+      // Masstransit de commandler Send methodu ile gönderiliyordu. Eventlerde Publish ile gönderiliyordu.
+      // Message Broker üzerinden çalışan
+
+      // Mediator=> sadece API içindeki servislerin event driven geliştirilmesi için bir teknik. In Memory
+      // Meditor içinde RequestHandlerlar command görevi görür. Send ile çağırılır
+      // Eğer bir event varsa INotification interface  ile bu süreci yöneteceğiz.
+      // Bu tarz durumlarda ise Publish methodunu kullanıcağız.
+
+      await this.mediator.Send(request);
+
+      return Ok();
     }
   }
 }

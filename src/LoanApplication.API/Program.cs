@@ -1,6 +1,7 @@
 using MassTransit;
 using Messaging.Consts;
 using Messaging.CustomerCredit;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,12 @@ builder.Services.AddMassTransit(opt =>
 
   });
 
+});
+
+// mediator servislerini sisteme tanýttýk. Masstransit Mediator ile karýþtýrmayalým. 
+builder.Services.AddMediatR(opt =>
+{
+  opt.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
 });
 
 
